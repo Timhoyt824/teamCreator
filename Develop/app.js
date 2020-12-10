@@ -10,6 +10,141 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 
+let validator = require("email-validator");
+
+let employees = [];
+
+let nameValid = name => {
+    if (name === "") {
+        return "Please enter your name.";
+    } return true;
+};
+
+let emailValid = email => {
+    if (validator.validate(email)) {
+        return true;
+    } else {
+        return "Please enter a valid email."
+    }
+};
+
+const managerQs = [{
+    message: "What is your Manager's name?",
+    name: "name",
+    validate: nameValid
+  },
+    {
+    message: "What is your Manager's id?",
+    name: "id"
+  },
+    {
+    message: "What is your Manager's email address?",
+    name: "email",
+    validate: emailValid
+  },
+    {
+    message: "What is your Manager's office number?",
+    name: "officeNumber"
+  },
+];
+
+function newTeamMember(){
+    inquirer.prompt([{
+            type: "list",
+            name: "team",
+            message: "Which type of team member would you like to add?",
+            choices: [
+                "Intern",
+                "Engineer",
+                "None"
+            ]
+    }]).then(employee => {
+        switch (employee.team){
+            case "Intern": 
+                internQs();
+                break;  
+            case "Engineer":
+                engineerQs();
+                break;
+            case "None":
+                let html = render(employees)
+                fs.writeFile(outputPath, html, function(err){
+                    if (err){
+                        console.log(err);
+                    }else{
+                        console.log("Success!");
+                    };
+                });
+        }
+    })
+};
+
+function init() {
+    inquirer
+  .prompt(managerQs)
+  .then(function(data) {
+        let manager = new Manager(data.name, data.id, data.email, data.officeNumber);
+        employees.push(manager);
+        newTeamMember();
+    });
+};
+
+function internQs(){
+    inquirer
+  .prompt([{
+       message: "What is your intern's name?",
+       name: "name",
+       validate: nameValid
+      },
+       {
+        message: "What is your intern's id?",
+        name: "id"
+      },
+       {
+        message: "What is your intern's email?",
+        name: "email",
+        validate: emailValid
+      },
+       {
+        message: "What is your intern's school?",
+        name: "school"
+      },
+    ]).then(function(data) {
+        let intern = new Intern(data.name, data.id, data.email, data.school);
+        employees.push(intern);
+        newTeamMember();
+        });
+};
+
+function engineerQs(){
+    inquirer
+  .prompt([{
+       message: "What is your engineer's name?",
+       name: "name",
+       validate: nameValid
+      },
+       {
+        message: "What is your engineer's id?",
+        name: "id"
+      },
+       {
+        message: "What is your engineer's email?",
+        name: "email",
+        validate: emailValid
+      },
+       {
+        message: "What is your engineer's GitHub username?",
+        name: "github"
+      },
+    ]).then(function(data) {
+        let engineer = new Engineer(data.name, data.id, data.email, data.github);
+        employees.push(engineer);
+        newTeamMember();
+        });
+};
+  
+init();
+
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
